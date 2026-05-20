@@ -43,6 +43,10 @@ button {
   min-height: 100vh;
 }
 
+.platform-shell.public-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .sidebar {
   position: sticky;
   top: 0;
@@ -178,6 +182,26 @@ button {
 
 .mobile-topbar {
   display: none;
+}
+
+.mobile-logout {
+  display: none;
+}
+
+.company-switcher {
+  display: grid;
+  gap: 8px;
+  color: rgba(238, 255, 250, 0.82);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.company-switcher select {
+  width: 100%;
+  min-height: 40px;
+  color: var(--ink);
+  text-transform: none;
 }
 
 .main {
@@ -1539,6 +1563,68 @@ tbody tr:hover {
   margin-top: 18px;
 }
 
+.empty-state {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid rgba(216, 230, 235, 0.86);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f4fbf8, #eef8ff);
+}
+
+.empty-state h3,
+.empty-state p {
+  margin: 0;
+}
+
+.empty-chart-box {
+  display: grid;
+  min-height: 112px;
+  place-items: center;
+  border: 1px dashed #c9dfe6;
+  border-radius: 8px;
+  color: var(--muted);
+  background: #f8fcfd;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.inline-select {
+  display: grid;
+  min-width: min(100%, 420px);
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.diagnosis-actions {
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.table-action {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #cfe3e8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .chart-grid-dashboard {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 18px;
@@ -1748,11 +1834,24 @@ tbody tr:hover {
 @media (max-width: 620px) {
   .mobile-topbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 42px;
+    grid-template-columns: minmax(0, 1fr) 42px minmax(70px, 112px) auto;
     align-items: center;
     gap: 8px;
     min-height: 56px;
     padding: 8px 10px;
+  }
+
+  .mobile-logout {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid rgba(216, 230, 235, 0.42);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
   }
 
   .mobile-topbar .brand {
@@ -1792,6 +1891,15 @@ tbody tr:hover {
     background-position: calc(50% - 4px) 50%, calc(50% + 4px) 50%;
     background-size: 8px 8px, 8px 8px;
     background-repeat: no-repeat;
+  }
+
+  .mobile-topbar select.mobile-company-select {
+    width: 100%;
+    max-width: 112px;
+    color: #0b3b46;
+    background-image: none;
+    font-size: 11px;
+    font-weight: 850;
   }
 
   .hero {
@@ -1883,5 +1991,66 @@ tbody tr:hover {
     animation-duration: 1ms !important;
     scroll-behavior: auto !important;
     transition-duration: 1ms !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8f6f4;
+    --muted: #9fb9c0;
+    --line: rgba(180, 212, 219, 0.22);
+    --soft: #102f36;
+    --panel: rgba(8, 27, 33, 0.88);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 18% 4%, rgba(54, 211, 153, 0.16), transparent 28%),
+      radial-gradient(circle at 92% 16%, rgba(14, 124, 200, 0.14), transparent 30%),
+      linear-gradient(135deg, #061b21 0%, #0a2830 56%, #07171d 100%);
+    color: var(--ink);
+  }
+
+  .page-frame,
+  .auth-card,
+  .metric-card,
+  .chart-card,
+  .table-card,
+  .diagnosis-card,
+  .report-preview,
+  .feature-card,
+  .plan-card,
+  .command-card {
+    border-color: rgba(180, 212, 219, 0.2);
+    background: linear-gradient(180deg, rgba(10, 38, 45, 0.96), rgba(7, 28, 34, 0.92));
+    color: var(--ink);
+  }
+
+  .page-heading h1,
+  .line-chart-meta strong,
+  .metric-card strong,
+  .section h2,
+  .auth-card h1 {
+    color: #e8f6f4;
+  }
+
+  input,
+  textarea,
+  select,
+  .table-action {
+    border-color: rgba(180, 212, 219, 0.22);
+    background: rgba(3, 18, 24, 0.88);
+    color: #e8f6f4;
+  }
+
+  th,
+  .empty-chart-box,
+  .empty-state {
+    background: rgba(10, 38, 45, 0.86);
+    color: #d3ece8;
+  }
+
+  tbody tr:hover {
+    background: rgba(22, 163, 106, 0.08);
   }
 }
