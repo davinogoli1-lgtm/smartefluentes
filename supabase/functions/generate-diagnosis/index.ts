@@ -13,6 +13,7 @@ type AnalysisPayload = {
   "Óleos e graxas"?: string | number;
   "Sólidos sedimentáveis"?: string | number;
   Vazão?: string | number;
+  Temperatura?: string | number;
   Observações?: string;
 };
 
@@ -66,20 +67,26 @@ Deno.serve(async (request) => {
               type: "object",
               additionalProperties: false,
               properties: {
+                status_operacional: { type: "string", enum: ["Normal", "Atenção", "Crítico"] },
                 possivel_causa: { type: "string" },
+                risco_ambiental: { type: "string" },
                 risco_operacional: { type: "string" },
                 acao_corretiva: { type: "string" },
                 acao_preventiva: { type: "string" },
-                sugestao_melhoria: { type: "string" },
+                sugestao_fisico_quimica: { type: "string" },
+                sugestao_biologica: { type: "string" },
                 nivel_alerta: { type: "string", enum: ["Normal", "Atenção", "Crítico"] },
                 confianca: { type: "string", enum: ["Baixa", "Média", "Alta"] }
               },
               required: [
+                "status_operacional",
                 "possivel_causa",
+                "risco_ambiental",
                 "risco_operacional",
                 "acao_corretiva",
                 "acao_preventiva",
-                "sugestao_melhoria",
+                "sugestao_fisico_quimica",
+                "sugestao_biologica",
                 "nivel_alerta",
                 "confianca"
               ]

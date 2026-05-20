@@ -52,6 +52,7 @@ create table if not exists public.analyses (
   oils_and_greases numeric,
   settleable_solids numeric,
   flow_rate numeric,
+  temperature numeric,
   observations text,
   created_at timestamptz not null default now()
 );
@@ -60,8 +61,11 @@ create table if not exists public.chemical_products (
   id uuid primary key default gen_random_uuid(),
   company_id uuid references public.companies(id) on delete cascade,
   product_name text not null,
+  product_type text,
   quantity_used numeric,
   cost numeric,
+  unit_cost numeric,
+  monthly_cost numeric,
   current_stock numeric,
   used_at date,
   created_at timestamptz not null default now()

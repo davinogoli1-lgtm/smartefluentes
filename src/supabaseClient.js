@@ -91,6 +91,7 @@ export async function saveAnalysis(analysis, companyId) {
     oils_and_greases: toNumber(analysis["Óleos e graxas"]),
     settleable_solids: toNumber(analysis["Sólidos sedimentáveis"]),
     flow_rate: toNumber(analysis.Vazão),
+    temperature: toNumber(analysis.Temperatura),
     observations: analysis.Observações
   });
 }
@@ -98,9 +99,12 @@ export async function saveAnalysis(analysis, companyId) {
 export async function saveChemicalProduct(product, companyId) {
   return insertRow("chemical_products", {
     company_id: companyId || null,
-    product_name: product["Insumo químico"],
-    quantity_used: toNumber(product["Quantidade aplicada"]),
+    product_name: product["Nome do insumo"],
+    product_type: product.Tipo,
+    quantity_used: toNumber(product["Quantidade usada"]),
     cost: toNumber(product["Custo operacional (R$)"]),
+    unit_cost: toNumber(product["Custo unitário (R$)"]),
+    monthly_cost: toNumber(product["Custo mensal (R$)"]),
     current_stock: toNumber(product["Estoque atual"]),
     used_at: product["Data de utilização"]
   });

@@ -332,6 +332,8 @@ button {
 .hero-grid,
 .metric-grid,
 .feature-grid,
+.modules-grid,
+.chart-grid-dashboard,
 .plans,
 .form-grid,
 .report-grid,
@@ -369,8 +371,13 @@ button {
 }
 
 .feature-grid,
+.modules-grid,
 .plans {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.modules-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .metric-grid {
@@ -1532,6 +1539,59 @@ tbody tr:hover {
   margin-top: 18px;
 }
 
+.chart-grid-dashboard {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.wide-chart {
+  grid-column: 1 / -1;
+}
+
+.consultoria-highlight {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  color: white;
+  background:
+    linear-gradient(135deg, rgba(6, 43, 50, 0.96), rgba(10, 107, 111, 0.92)),
+    linear-gradient(90deg, rgba(54, 211, 153, 0.2), rgba(14, 124, 200, 0.16));
+}
+
+.consultoria-highlight span {
+  color: #8ff0d4;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.consultoria-highlight h2,
+.consultoria-highlight p {
+  color: white;
+}
+
+.consultoria-highlight p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(238, 255, 250, 0.78);
+}
+
+.login-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.login-actions button {
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .record-id {
   color: var(--muted);
   font-size: 13px;
@@ -1668,7 +1728,9 @@ tbody tr:hover {
   }
 
   .landing-stats,
-  .analytics-showcase {
+  .analytics-showcase,
+  .modules-grid,
+  .chart-grid-dashboard {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -1684,19 +1746,71 @@ tbody tr:hover {
 }
 
 @media (max-width: 620px) {
+  .mobile-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    align-items: center;
+    gap: 8px;
+    min-height: 56px;
+    padding: 8px 10px;
+  }
+
+  .mobile-topbar .brand {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .mobile-topbar .brand-logo-wrap,
+  .mobile-topbar .brand-logo,
+  .mobile-topbar .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .mobile-topbar .brand-copy {
+    min-width: 0;
+  }
+
+  .mobile-topbar .brand small {
+    display: none;
+  }
+
+  .mobile-topbar .brand b {
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .mobile-topbar select {
+    width: 42px;
+    max-width: 42px;
+    height: 38px;
+    padding: 0 8px;
+    color: transparent;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.94);
+    background-image: linear-gradient(45deg, transparent 50%, #0b3b46 50%), linear-gradient(135deg, #0b3b46 50%, transparent 50%);
+    background-position: calc(50% - 4px) 50%, calc(50% + 4px) 50%;
+    background-size: 8px 8px, 8px 8px;
+    background-repeat: no-repeat;
+  }
+
   .hero {
     min-height: auto;
+    padding: 22px 14px 34px;
   }
 
   .hero-banner-wrap {
-    min-height: 160px;
-    margin-bottom: 28px;
-    padding: 6px;
+    min-height: auto;
+    margin-bottom: 18px;
+    padding: 0;
   }
 
   .hero-banner,
   .hero-banner-fallback {
-    border-radius: 18px;
+    width: 100%;
+    max-height: none;
+    border-radius: 16px;
+    object-fit: contain;
   }
 
   .hero-banner-fallback {
@@ -1708,13 +1822,49 @@ tbody tr:hover {
   }
 
   .hero-content {
-    padding: 18px;
+    padding: 10px 2px;
+  }
+
+  .hero h1,
+  .hero-brand-title {
+    font-size: clamp(38px, 13vw, 52px);
+    line-height: 1;
+  }
+
+  .hero-subtitle {
+    font-size: 17px;
+    line-height: 1.42;
+  }
+
+  .hero-actions {
+    display: grid;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .hero-actions .btn,
+  .btn.full {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
   }
 
   .landing-stats,
   .analytics-showcase,
+  .modules-grid,
+  .chart-grid-dashboard,
   .mini-metric-row {
     grid-template-columns: 1fr;
+  }
+
+  .consultoria-highlight {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .login-actions {
+    flex-direction: column;
+    align-items: center;
   }
 
   .command-card {

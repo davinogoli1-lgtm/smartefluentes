@@ -31,15 +31,24 @@ const metricData = [
   { label: "Turbidez", value: "36 NTU", target: "< 50", trend: "+3%", status: "Atenção" },
   { label: "Vazão", value: "42 m³/h", target: "35 - 48", trend: "Pico às 14h", status: "Normal" },
   { label: "Temperatura", value: "31 °C", target: "20 - 35", trend: "+1 °C", status: "Normal" },
-  { label: "Consumo de insumos", value: "84 kg/dia", target: "< 90", trend: "-12%", status: "Normal" }
+  { label: "Consumo de insumos químicos", value: "84 kg/dia", target: "< 90", trend: "-12%", status: "Normal" },
+  { label: "Status da ETE", value: "Normal", target: "Normal, Atenção ou Crítico", trend: "Sem alarme crítico", status: "Normal" }
 ];
 
 const analysisHistory = [
-  { date: "13/05", ph: 6.8, dqo: 462, dbo: 172, turbidez: 42 },
-  { date: "14/05", ph: 7.0, dqo: 438, dbo: 166, turbidez: 39 },
-  { date: "15/05", ph: 7.4, dqo: 429, dbo: 158, turbidez: 41 },
-  { date: "16/05", ph: 7.2, dqo: 411, dbo: 151, turbidez: 37 },
-  { date: "17/05", ph: 7.1, dqo: 418, dbo: 146, turbidez: 36 }
+  { date: "13/05", ph: 6.8, dqo: 462, dbo: 172, turbidez: 42, vazao: 39, temperatura: 29, ocorrencias: 2 },
+  { date: "14/05", ph: 7.0, dqo: 438, dbo: 166, turbidez: 39, vazao: 41, temperatura: 30, ocorrencias: 1 },
+  { date: "15/05", ph: 7.4, dqo: 429, dbo: 158, turbidez: 41, vazao: 44, temperatura: 31, ocorrencias: 1 },
+  { date: "16/05", ph: 7.2, dqo: 411, dbo: 151, turbidez: 37, vazao: 43, temperatura: 31, ocorrencias: 0 },
+  { date: "17/05", ph: 7.1, dqo: 418, dbo: 146, turbidez: 36, vazao: 42, temperatura: 31, ocorrencias: 0 }
+];
+
+const chemicalMonthlyData = [
+  { date: "Jan", consumo: 2380 },
+  { date: "Fev", consumo: 2290 },
+  { date: "Mar", consumo: 2170 },
+  { date: "Abr", consumo: 2050 },
+  { date: "Mai", consumo: 1940 }
 ];
 
 const chemicalRows = [
@@ -59,9 +68,12 @@ const companyDefaults = {
 };
 
 const chemicalDefaults = {
-  "Insumo químico": "PAC 18%",
-  "Quantidade aplicada": "46",
+  "Nome do insumo": "PAC 18%",
+  Tipo: "Coagulante",
+  "Quantidade usada": "46",
   "Custo operacional (R$)": "322",
+  "Custo unitário (R$)": "7",
+  "Custo mensal (R$)": "1940",
   "Estoque atual": "720",
   "Data de utilização": "2026-05-17"
 };
@@ -81,6 +93,7 @@ function App() {
     "Óleos e graxas": "8",
     "Sólidos sedimentáveis": "0.7",
     Vazão: "42",
+    Temperatura: "31",
     Observações: "Operação estável, com leve aumento de turbidez após a etapa de equalização."
   });
   const [chemical, setChemical] = useState(chemicalDefaults);
@@ -199,6 +212,14 @@ function LandingPage({ setPage }) {
     ["Controle de Insumos", "Acompanhe consumo, estoque e custo operacional de coagulantes, alcalinizantes, polímeros e insumos auxiliares."],
     ["Relatórios Técnicos", "Consolide histórico analítico, indicadores gráficos, diagnóstico e recomendações para tomada de decisão."]
   ];
+  const modules = [
+    ["Dashboard", "Indicadores críticos, status da ETE, tendências operacionais e leitura executiva em tempo real."],
+    ["Análises", "Registro de pH, DQO, DBO, turbidez, óleos e graxas, sólidos sedimentáveis, vazão e temperatura."],
+    ["Diagnóstico Inteligente", "Interpretação técnica com causas prováveis, riscos ambientais e ações de controle."],
+    ["Controle de Insumos", "Gestão de coagulantes, polímeros, alcalinizantes, ácidos, oxidantes e antiespumantes."],
+    ["Relatórios", "Prévia técnica com período analisado, gráficos, ocorrências e recomendações ambientais."],
+    ["Consultoria Técnica", "Solicitações para otimização físico-química, biológica, custos, lodo e adequação ambiental."]
+  ];
   const steps = ["Cadastre a unidade industrial e a ETE", "Registre análises laboratoriais e consumo de insumos", "Receba diagnósticos e recomendações técnicas", "Gere relatórios para gestão e conformidade ambiental"];
   return h(
     React.Fragment,
@@ -286,6 +307,14 @@ function LandingPage({ setPage }) {
       h("h2", null, "Como funciona"),
       h("div", { className: "steps" }, steps.map((step, index) => h("div", { className: "step", key: step }, h("b", null, `0${index + 1}`), h("span", null, step))))
     ),
+    h("section", { className: "section modules-section" },
+      h("div", { className: "section-heading" },
+        h("span", null, "Módulos da plataforma"),
+        h("h2", null, "Uma suíte operacional para gestão ambiental industrial"),
+        h("p", null, "Do lançamento analítico ao relatório técnico, a plataforma organiza a rotina da ETE com linguagem corporativa, rastreabilidade e visão de melhoria contínua.")
+      ),
+      h("div", { className: "modules-grid" }, modules.map(([title, text]) => h(FeatureCard, { key: title, title, text })))
+    ),
     h("section", { className: "section" },
       h("h2", null, "Planos corporativos"),
       h("div", { className: "plans" },
@@ -297,6 +326,14 @@ function LandingPage({ setPage }) {
           )
         )
       )
+    ),
+    h("section", { className: "section consultoria-highlight" },
+      h("div", null,
+        h("span", null, "Consultoria técnica"),
+        h("h2", null, "Especialistas para otimização físico-química, biológica e redução de custos"),
+        h("p", null, "Solicite apoio para avaliação da ETE, adequação ambiental, treinamento operacional e melhoria de indicadores de processo.")
+      ),
+      h("button", { className: "btn secondary light", onClick: () => setPage("consultoria") }, "Solicitar avaliação técnica")
     ),
     h("section", { className: "section contact" },
       h("h2", null, "Contato"),
@@ -321,6 +358,7 @@ function LoginPage({ setPage, setCurrentUser, persist }) {
   }
 
   return h("section", { className: "auth-card" },
+    h(Brand, { onClick: () => setPage("landing"), compact: false }),
     h("h1", null, "Acesso à plataforma"),
     h("p", { className: "form-hint" }, "Acesse o ambiente operacional para acompanhar indicadores, análises e recomendações técnicas da ETE."),
     h("label", null, "E-mail", h("input", {
@@ -335,7 +373,11 @@ function LoginPage({ setPage, setCurrentUser, persist }) {
       onChange: (event) => setCredentials({ ...credentials, password: event.target.value }),
       placeholder: "Digite sua senha"
     })),
-    h("button", { className: "btn primary full", onClick: handleLogin }, "Acessar ambiente operacional")
+    h("button", { className: "btn primary full", onClick: handleLogin }, "Entrar"),
+    h("div", { className: "login-actions" },
+      h("button", { type: "button", onClick: () => setPage("login") }, "Criar conta"),
+      h("button", { type: "button", onClick: () => setPage("login") }, "Esqueci minha senha")
+    )
   );
 }
 
@@ -361,9 +403,12 @@ function DashboardPage() {
       h("div", { className: "status-card attention" }, h("span", null, "Ponto de atenção"), h("strong", null, "Turbidez"), h("small", null, "Acompanhar desempenho da etapa de clarificação"))
     ),
     h("div", { className: "metric-grid" }, metricData.map((metric) => h(MetricCard, { key: metric.label, metric }))),
-    h("div", { className: "two-col" },
-      h(ChartCard, { title: "Histórico de DQO", field: "dqo", suffix: " mg/L" }),
-      h(ChartCard, { title: "Histórico de Turbidez", field: "turbidez", suffix: " NTU" })
+    h("div", { className: "chart-grid-dashboard" },
+      h(ChartCard, { title: "Histórico de pH", field: "ph", suffix: "" }),
+      h(ChartCard, { title: "DQO por período", field: "dqo", suffix: " mg/L" }),
+      h(ChartCard, { title: "Consumo químico mensal", field: "consumo", suffix: " kg", data: chemicalMonthlyData }),
+      h(ChartCard, { title: "Vazão diária", field: "vazao", suffix: " m³/h" }),
+      h(ChartCard, { title: "Ocorrências operacionais", field: "ocorrencias", suffix: "", className: "wide-chart" })
     )
   );
 }
@@ -439,11 +484,14 @@ function AiPage({ analysis, setAnalysis, diagnosis, aiState, setAiState, setAiDi
       }
 
       setAiDiagnosis({
+        "Status operacional": result.data.status_operacional || result.data.nivel_alerta || "Atenção técnica",
         "Possível causa": result.data.possivel_causa,
+        "Risco ambiental": result.data.risco_ambiental || result.data.risco_operacional,
         "Risco operacional": result.data.risco_operacional,
         "Ação corretiva": result.data.acao_corretiva,
         "Ação preventiva": result.data.acao_preventiva,
-        "Sugestão de melhoria físico-química ou biológica": result.data.sugestao_melhoria,
+        "Sugestão de melhoria físico-química": result.data.sugestao_fisico_quimica || result.data.sugestao_melhoria,
+        "Sugestão de melhoria biológica": result.data.sugestao_biologica || result.data.sugestao_melhoria,
         "Nível de alerta": result.data.nivel_alerta,
         Confiança: result.data.confianca
       });
@@ -460,7 +508,7 @@ function AiPage({ analysis, setAnalysis, diagnosis, aiState, setAiState, setAiDi
   return h(PageFrame, { title: "Diagnóstico Inteligente", subtitle: "Interpretação técnica dos dados analíticos com apoio de inteligência artificial e critérios operacionais da ETE." },
     h("div", { className: "two-col align-start" },
       h("form", { className: "form-grid compact" },
-        ["pH", "DQO", "DBO", "Turbidez", "Vazão", "Óleos e graxas", "Sólidos sedimentáveis"].map((label) =>
+        ["pH", "DQO", "DBO", "Turbidez", "Vazão", "Temperatura", "Óleos e graxas", "Sólidos sedimentáveis"].map((label) =>
           h(FormField, { key: label, label, value: analysis[label], onChange: (next) => setAnalysis({ ...analysis, [label]: next }) })
         ),
         h("button", { type: "button", className: "btn primary full", onClick: handleGenerateDiagnosis }, "Gerar diagnóstico inteligente"),
@@ -494,7 +542,7 @@ function ChemicalsPage({ chemical, setChemical, companyId, persist }) {
       }))
     ),
     h("div", { className: "form-actions" },
-      h("button", { type: "button", className: "btn primary", onClick: handleSave }, "Registrar insumo químico")
+      h("button", { type: "button", className: "btn primary", onClick: handleSave }, "Registrar insumo")
     ),
     h("div", { className: "table-card" },
       h("h3", null, "Histórico de utilização"),
@@ -505,31 +553,51 @@ function ChemicalsPage({ chemical, setChemical, companyId, persist }) {
 
 function ReportsPage({ diagnosis, company, companyId, persist }) {
   const [generated, setGenerated] = useState(false);
+  const reportRecommendations = [
+    diagnosis["Ação corretiva"],
+    diagnosis["Ação preventiva"],
+    diagnosis["Sugestão de melhoria físico-química"],
+    diagnosis["Sugestão de melhoria biológica"]
+  ].filter(Boolean);
+
   async function handleGenerate() {
     setGenerated(true);
     await persist(
       () => saveReport({
-        title: "Relatório técnico - Prévia",
+        title: "Relatório Técnico Smartefluentes",
         company,
+        period: "13/05/2026 a 17/05/2026",
         analysisHistory,
-        charts: { dqo: analysisHistory.map((item) => item.dqo), turbidez: analysisHistory.map((item) => item.turbidez) },
+        monitoredParameters: ["pH", "DQO", "DBO", "Turbidez", "Vazão", "Temperatura", "Ocorrências operacionais"],
+        charts: {
+          ph: analysisHistory.map((item) => item.ph),
+          dqo: analysisHistory.map((item) => item.dqo),
+          turbidez: analysisHistory.map((item) => item.turbidez),
+          vazao: analysisHistory.map((item) => item.vazao)
+        },
         diagnosis,
-        recommendations: [diagnosis["Ação corretiva"], diagnosis["Ação preventiva"], diagnosis["Sugestão de melhoria físico-química ou biológica"]]
+        occurrences: analysisHistory.reduce((total, item) => total + item.ocorrencias, 0),
+        recommendations: reportRecommendations,
+        signature: "Smartefluentes - Inteligência operacional para tratamento de efluentes"
       }, companyId),
       "Relatório técnico registrado no Supabase."
     );
   }
 
   return h(PageFrame, { title: "Relatórios", subtitle: "Consolidação técnica de dados operacionais, histórico analítico, diagnóstico e recomendações ambientais." },
-    h("button", { className: "btn primary", onClick: handleGenerate }, "Gerar e salvar relatório técnico"),
+    h("button", { className: "btn primary", onClick: handleGenerate }, "Gerar Relatório Técnico"),
     generated && h("section", { className: "report-preview" },
-      h("h3", null, "Relatório técnico - Prévia"),
+      h("h3", null, "Relatório Técnico Smartefluentes"),
       h("div", { className: "report-grid" },
         h("article", null, h("span", null, "Dados da unidade operacional"), h("p", null, `${company["Razão social"]} - ${company.CNPJ}`)),
+        h("article", null, h("span", null, "Período analisado"), h("p", null, "13/05/2026 a 17/05/2026")),
+        h("article", null, h("span", null, "Parâmetros monitorados"), h("p", null, "pH, DQO, DBO, turbidez, vazão, temperatura e ocorrências.")),
         h("article", null, h("span", null, "Histórico analítico"), h("p", null, "5 coletas recentes com pH estável e redução gradual de DQO.")),
         h("article", null, h("span", null, "Indicadores gráficos"), h("p", null, "DQO, DBO, turbidez e vazão consolidados por período.")),
-        h("article", null, h("span", null, "Diagnóstico técnico"), h("p", null, diagnosis["Possível causa"])),
-        h("article", null, h("span", null, "Recomendações técnicas"), h("p", null, diagnosis["Ação corretiva"]))
+        h("article", null, h("span", null, "Diagnóstico operacional"), h("p", null, diagnosis["Possível causa"])),
+        h("article", null, h("span", null, "Ocorrências"), h("p", null, "4 ocorrências operacionais registradas no período, sem criticidade recorrente.")),
+        h("article", null, h("span", null, "Recomendações técnicas"), h("p", null, reportRecommendations.join(" "))),
+        h("article", null, h("span", null, "Assinatura"), h("p", null, "Smartefluentes - Inteligência operacional para tratamento de efluentes."))
       ),
       h(ChartCard, { title: "Tendência de DQO para relatório", field: "dqo", suffix: " mg/L" })
     )
@@ -546,7 +614,7 @@ function SaveToast({ state }) {
 }
 
 function ConsultingPage() {
-  const options = ["Avaliação técnica da ETE", "Redução de custo com insumos", "Otimização físico-química", "Otimização biológica", "Redução de geração de lodo", "Adequação ambiental"];
+  const options = ["Avaliação de ETE", "Redução de custo químico", "Melhoria físico-química", "Melhoria biológica", "Redução de geração de lodo", "Adequação ambiental", "Treinamento operacional"];
   return h(PageFrame, { title: "Consultoria Técnica", subtitle: "Solicite apoio especializado para diagnóstico, otimização de processos e adequação ambiental da operação." },
     h("form", { className: "consulting-form" },
       h("div", { className: "check-grid" }, options.map((option) => h("label", { key: option, className: "check-card" }, h("input", { type: "checkbox" }), h("span", null, option)))),
@@ -609,13 +677,14 @@ function formatTableHeader(header) {
   return labels[header] || header;
 }
 
-function ChartCard({ title, field, suffix }) {
-  const max = Math.max(...analysisHistory.map((item) => item[field]));
-  return h("article", { className: "chart-card" },
-    h("div", { className: "chart-heading" }, h("h3", null, title), h("span", null, "5 coletas")),
-    h(LineChart, { field, label: title }),
+function ChartCard({ title, field, suffix, data = analysisHistory, className = "" }) {
+  const values = data.map((item) => Number(item[field]) || 0);
+  const max = Math.max(...values, 1);
+  return h("article", { className: `chart-card ${className}` },
+    h("div", { className: "chart-heading" }, h("h3", null, title), h("span", null, `${data.length} registros`)),
+    h(LineChart, { field, label: title, data }),
     h("div", { className: "bar-chart" },
-      analysisHistory.map((item) =>
+      data.map((item) =>
         h("div", { className: "bar-row", key: item.date },
           h("span", null, item.date),
           h("div", { className: "bar-track" }, h("i", { style: { width: `${(item[field] / max) * 100}%` } })),
@@ -626,8 +695,8 @@ function ChartCard({ title, field, suffix }) {
   );
 }
 
-function LineChart({ field, label, compact = false }) {
-  const values = analysisHistory.map((item) => item[field]);
+function LineChart({ field, label, compact = false, data = analysisHistory }) {
+  const values = data.map((item) => Number(item[field]) || 0);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -685,43 +754,84 @@ function buildDiagnosis(analysis) {
   const dqo = Number(analysis.DQO);
   const turbidity = Number(analysis.Turbidez);
   const flow = Number(analysis.Vazão);
+  const status = (label) => ({
+    "Status operacional": label
+  });
 
-  if (ph < 6 || ph > 9) {
+  if (ph < 6) {
     return {
-      "Possível causa": "Desvio de neutralização ou variação brusca na carga afluente.",
-      "Risco operacional": "Redução da eficiência biológica, risco de corrosão e potencial não conformidade ambiental.",
-      "Ação corretiva": "Ajustar a dosagem de alcalinizante ou ácido e verificar a calibração do medidor de pH.",
-      "Ação preventiva": "Implantar alarme por faixa operacional e revisar a rotina de equalização.",
-      "Sugestão de melhoria físico-química ou biológica": "Automatizar o controle de pH antes da etapa biológica."
+      ...status("Atenção"),
+      "Possível causa": "Possível carga ácida no afluente, consumo de alcalinidade ou instabilidade na etapa de neutralização.",
+      "Risco ambiental": "Maior probabilidade de lançamento fora da faixa de pH e impacto na conformidade ambiental.",
+      "Risco operacional": "Redução da eficiência biológica, corrosão de componentes e instabilidade da coagulação/floculação.",
+      "Ação corretiva": "Ajustar alcalinidade com dosagem controlada de alcalinizante e verificar calibração do medidor de pH.",
+      "Ação preventiva": "Implantar alarme por faixa operacional, revisar equalização e acompanhar alcalinidade do afluente.",
+      "Sugestão de melhoria físico-química": "Automatizar neutralização com controle proporcional e validar jar test após correção de pH.",
+      "Sugestão de melhoria biológica": "Proteger a biomassa com alimentação gradual e monitoramento de pH no reator biológico."
     };
   }
 
-  if (dqo > 500 || turbidity > 50) {
+  if (ph > 9) {
     return {
-      "Possível causa": "Sobrecarga orgânica ou baixa eficiência na coagulação/floculação.",
-      "Risco operacional": "Arraste de sólidos, aumento de DBO remanescente e maior geração de lodo.",
-      "Ação corretiva": "Realizar jar test e ajustar dosagem de PAC, polímero e tempo de mistura.",
-      "Ação preventiva": "Monitorar a variação de carga por turno e revisar o ponto de dosagem.",
-      "Sugestão de melhoria físico-química ou biológica": "Otimizar o coagulante e avaliar reforço de aeração no reator biológico."
+      ...status("Atenção"),
+      "Possível causa": "Possível excesso de alcalinizante ou entrada de efluente com elevada alcalinidade.",
+      "Risco ambiental": "Risco de não conformidade por pH elevado e alteração da qualidade do efluente tratado.",
+      "Risco operacional": "Precipitação indesejada, perda de eficiência de coagulação e estresse da etapa biológica.",
+      "Ação corretiva": "Reduzir dosagem de alcalinizante, confirmar setpoint de automação e avaliar necessidade de ajuste ácido controlado.",
+      "Ação preventiva": "Revisar curva de dosagem, calibração de sonda e rotina de validação por amostra composta.",
+      "Sugestão de melhoria físico-química": "Criar faixa de controle com bloqueio de dosagem em pH alto e registro de consumo por batelada.",
+      "Sugestão de melhoria biológica": "Evitar choque de pH no reator e acompanhar atividade biológica após a correção."
+    };
+  }
+
+  if (dqo > 500) {
+    return {
+      ...status("Atenção"),
+      "Possível causa": "Possível aumento de carga orgânica, variação de processo industrial ou baixa eficiência de remoção preliminar.",
+      "Risco ambiental": "Elevação de matéria orgânica no efluente tratado e risco de ultrapassar limites de lançamento.",
+      "Risco operacional": "Sobrecarga do sistema biológico, aumento de DBO remanescente e maior consumo de oxigênio.",
+      "Ação corretiva": "Identificar origem da carga, ajustar equalização e revisar aeração, recirculação e dosagem auxiliar.",
+      "Ação preventiva": "Monitorar carga por turno, criar alerta de DQO e integrar produção industrial com operação da ETE.",
+      "Sugestão de melhoria físico-química": "Avaliar pré-tratamento, coagulação otimizada e remoção complementar de sólidos coloidais.",
+      "Sugestão de melhoria biológica": "Revisar idade do lodo, oxigênio dissolvido e capacidade de biodegradação da biomassa."
+    };
+  }
+
+  if (turbidity > 50) {
+    return {
+      ...status("Atenção"),
+      "Possível causa": "Possível falha de coagulação/floculação, formação inadequada de flocos ou arraste de sólidos no clarificador.",
+      "Risco ambiental": "Aumento de sólidos suspensos e risco de não conformidade visual e analítica no efluente final.",
+      "Risco operacional": "Arraste de lodo, perda de eficiência de clarificação e elevação do consumo de insumos.",
+      "Ação corretiva": "Realizar jar test, ajustar coagulante, polímero, pH de coagulação e tempos de mistura.",
+      "Ação preventiva": "Padronizar ensaios de bancada, revisar ponto de dosagem e acompanhar turbidez por turno.",
+      "Sugestão de melhoria físico-química": "Otimizar gradiente de mistura, maturação do floco e dosagem por carga afluente.",
+      "Sugestão de melhoria biológica": "Verificar contribuição de sólidos biológicos e condição de sedimentabilidade do lodo."
     };
   }
 
   if (flow > 48) {
     return {
+      ...status("Crítico"),
       "Possível causa": "Pico hidráulico acima da faixa de projeto da ETE.",
+      "Risco ambiental": "Risco de lançamento com remoção insuficiente por redução do tempo de tratamento.",
       "Risco operacional": "Redução do tempo de detenção hidráulica e aumento do risco de perda de clarificação.",
       "Ação corretiva": "Equalizar a vazão de entrada e reduzir descargas concentradas.",
       "Ação preventiva": "Programar descargas industriais em janelas operacionais controladas.",
-      "Sugestão de melhoria físico-química ou biológica": "Avaliar tanque de equalização adicional ou controle de vazão por inversor."
+      "Sugestão de melhoria físico-química": "Avaliar tanque de equalização adicional, controle de vazão por inversor e dosagem proporcional.",
+      "Sugestão de melhoria biológica": "Proteger o reator biológico contra lavagem de biomassa e oscilações bruscas de carga."
     };
   }
 
   return {
+    ...status("Normal"),
     "Possível causa": "Operação dentro da faixa esperada, com leve oscilação de turbidez.",
+    "Risco ambiental": "Baixo no momento, com indicadores dentro da condição operacional simulada.",
     "Risco operacional": "Baixo no momento, com necessidade de acompanhamento da etapa de clarificação.",
     "Ação corretiva": "Manter a dosagem atual e verificar a formação de flocos no decantador.",
     "Ação preventiva": "Padronizar jar test semanal e registrar tendência de consumo de insumos.",
-    "Sugestão de melhoria físico-química ou biológica": "Reduzir a dosagem gradualmente, com controle de turbidez, para buscar economia operacional segura."
+    "Sugestão de melhoria físico-química": "Reduzir a dosagem gradualmente, com controle de turbidez, para buscar economia operacional segura.",
+    "Sugestão de melhoria biológica": "Manter monitoramento de DBO, oxigênio dissolvido e sedimentabilidade para preservar estabilidade do processo."
   };
 }
 
