@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { MobileTopbar, Sidebar, Toast } from "./components/Layout.jsx";
+import { MobileTopbar, PageFrame, Sidebar, Toast } from "./components/Layout.jsx";
 import Admin from "./pages/Admin.jsx";
 import Analyses from "./pages/Analyses.jsx";
 import Automations from "./pages/Automations.jsx";
@@ -24,6 +24,7 @@ import {
   fetchProfile,
   fetchReports,
   fetchSupportTickets,
+  getActiveCompany,
   getSession,
   isSupabaseConfigured,
   onAuthStateChange,
@@ -31,6 +32,7 @@ import {
 } from "./supabaseClient.js";
 
 const publicPages = ["login", "register"];
+const companyRequiredPages = ["analyses", "diagnostics", "chemical-inputs", "reports", "financial", "iot-sensors", "tickets", "automations"];
 
 export default function App() {
   const [page, setPageState] = useState("login");
@@ -51,7 +53,7 @@ export default function App() {
   const [automations, setAutomations] = useState([]);
 
   const user = session?.user || null;
-  const activeCompany = companies.find((company) => company.id === activeCompanyId) || companies[0] || null;
+  const activeCompany = getActiveCompany(companies, activeCompanyId);
 
   const notify = useCallback((message, type = "success") => {
     setToast({ message, type });
@@ -214,6 +216,17 @@ export default function App() {
 
     if (page === "register") return <Register setPage={setPageState} notify={notify} />;
     if (!user || page === "login") return <Login setPage={setPageState} onAuthenticated={setSession} notify={notify} />;
+    if (!activeCompany && companyRequiredPages.includes(page)) {
+      return (
+        <PageFrame title="Empresa necessária" subtitle="Cadastre ou selecione uma empresa para continuar.">
+          <div className="empty-state">
+            <h3>Cadastre uma empresa antes de usar este módulo.</h3>
+            <p>Os lançamentos operacionais precisam de uma empresa ativa para que as políticas RLS vinculem os dados ao usuário logado.</p>
+            <button className="btn primary" onClick={() => setPageState("companies")}>Cadastrar empresa</button>
+          </div>
+        </PageFrame>
+      );
+    }
     if (page === "companies") {
       return <Companies user={user} companies={companies} activeCompanyId={activeCompanyId} onCompanyChange={handleCompanyChange} onSaved={loadCompanies} notify={notify} />;
     }

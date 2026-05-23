@@ -22,8 +22,40 @@ function requireSupabase() {
   return supabase;
 }
 
+function friendlySupabaseError(error) {
+  const message = error?.message || String(error || "Erro desconhecido no Supabase.");
+  const code = error?.code || error?.statusCode || "";
+  const lower = message.toLowerCase();
+
+  if (code === "42501" || lower.includes("row-level security") || lower.includes("violates row-level security")) {
+    return new Error("A operação foi bloqueada pelas políticas de segurança do Supabase. Confirme se a empresa ativa pertence ao usuário logado e execute novamente o supabase/schema.sql atualizado.");
+  }
+
+  if (code === "42P01" || lower.includes("schema cache") || lower.includes("could not find the table") || lower.includes("relation") && lower.includes("does not exist")) {
+    return new Error("Tabela não encontrada no Supabase. Execute o arquivo supabase/schema.sql no SQL Editor e aguarde o cache da API atualizar.");
+  }
+
+  if (code === "23503" || lower.includes("foreign key")) {
+    return new Error("Registro vinculado a uma empresa ou análise inexistente. Selecione uma empresa válida e tente novamente.");
+  }
+
+  if (code === "23514" || lower.includes("check constraint")) {
+    return new Error("Um campo possui valor fora do padrão aceito pelo banco. Revise status, tipo ou prioridade e tente novamente.");
+  }
+
+  if (lower.includes("bucket not found") || lower.includes("storage bucket") || lower.includes("the resource was not found")) {
+    return new Error("Bucket de relatórios não encontrado. Crie o bucket reports no Supabase Storage ou execute o supabase/schema.sql atualizado.");
+  }
+
+  if (lower.includes("jwt") || lower.includes("invalid token") || lower.includes("not authenticated")) {
+    return new Error("Sessão expirada ou inválida. Faça login novamente.");
+  }
+
+  return new Error(message);
+}
+
 function assertError(error) {
-  if (error) throw error;
+  if (error) throw friendlySupabaseError(error);
 }
 
 export function toNumber(value) {
@@ -102,6 +134,22 @@ export async function fetchCompanies() {
   return selectRows("companies", (table) => table.select("*").order("created_at", { ascending: false }));
 }
 
+export function getActiveCompany(companies, activeCompanyId) {
+  return companies.find((company) => company.id === activeCompanyId) || companies[0] || null;
+}
+
+export async function fetchActiveCompany(preferredCompanyId = "") {
+  const companies = await fetchCompanies();
+  return getActiveCompany(companies, preferredCompanyId);
+}
+
+function requireCompanyId(companyId) {
+  if (!companyId) {
+    throw new Error("Cadastre uma empresa antes de usar este módulo.");
+  }
+  return companyId;
+}
+
 export async function saveCompany(company, userId) {
   const client = requireSupabase();
   const payload = {
@@ -135,7 +183,7 @@ export async function saveAnalysis(analysis, companyId) {
   const { data, error } = await client
     .from("analyses")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       data: analysis.data,
       ph: toNumber(analysis.ph),
       dqo: toNumber(analysis.dqo),
@@ -197,7 +245,7 @@ export async function saveChemicalInput(input, companyId) {
   const { data, error } = await client
     .from("chemical_inputs")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       nome: input.nome,
       tipo: input.tipo,
       quantidade_usada: toNumber(input.quantidade_usada),
@@ -224,7 +272,7 @@ export async function saveReport(report, companyId) {
   const { data, error } = await client
     .from("reports")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       periodo: report.periodo,
       resumo: report.resumo,
       recomendacoes: report.recomendacoes,
@@ -238,7 +286,7 @@ export async function saveReport(report, companyId) {
 
 export async function uploadReportPdf({ userId, companyId, fileName, blob }) {
   const client = requireSupabase();
-  const path = `${userId}/${companyId}/${fileName}`;
+  const path = `${userId}/${requireCompanyId(companyId)}/${fileName}`;
   const { error } = await client.storage.from("reports").upload(path, blob, {
     contentType: "application/pdf",
     upsert: true
@@ -260,7 +308,7 @@ export async function saveFinancialEntry(entry, companyId) {
   const { data, error } = await client
     .from("financial")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       tipo: entry.tipo,
       descricao: entry.descricao,
       valor: toNumber(entry.valor),
@@ -285,7 +333,7 @@ export async function saveIotSensor(sensor, companyId) {
   const { data, error } = await client
     .from("iot_sensors")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       sensor_nome: sensor.sensor_nome,
       parametro: sensor.parametro,
       valor: toNumber(sensor.valor),
@@ -311,7 +359,7 @@ export async function saveSupportTicket(ticket, companyId) {
   const { data, error } = await client
     .from("support_tickets")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       titulo: ticket.titulo,
       descricao: ticket.descricao,
       prioridade: ticket.prioridade,
@@ -348,7 +396,7 @@ export async function saveAutomation(automation, companyId) {
   const { data, error } = await client
     .from("operational_automations")
     .insert({
-      company_id: companyId,
+      company_id: requireCompanyId(companyId),
       nome: automation.nome,
       condicao: automation.condicao,
       acao: automation.acao,
